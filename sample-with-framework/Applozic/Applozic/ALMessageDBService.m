@@ -301,10 +301,10 @@
 
 -(void)getMessages:(NSMutableArray *)subGroupList
 {
-    if ([self isMessageTableEmpty])  // db is not synced
+    if ([self isMessageTableEmpty] || [ALApplozicSettings getCategoryName])  // db is not synced
     {
-        [self fetchAndRefreshFromServer:subGroupList];
-        [self syncConactsDB];
+            [self fetchAndRefreshFromServer:subGroupList];
+            [self syncConactsDB];
     }
     else // db is synced
     {
@@ -420,6 +420,15 @@
         NSFetchRequest * theRequest = [NSFetchRequest fetchRequestWithEntityName:@"DB_Message"];
         if([theDictionary[@"groupId"] intValue]==0){
             continue;
+        }
+        
+        if([ALApplozicSettings getCategoryName]){
+            ALChannel* channel=  [[ALChannelService new] getChannelByKey:[NSNumber numberWithInt:[theDictionary[@"groupId"] intValue]]];
+            if(![channel isBelongsToCategory:[ALApplozicSettings getCategoryName]])
+            {
+                continue;
+            }
+            
         }
         
         [theRequest setSortDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"createdAt" ascending:NO]]];
